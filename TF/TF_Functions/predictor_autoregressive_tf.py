@@ -43,7 +43,6 @@ from types import SimpleNamespace
 import yaml
 import os
 import tensorflow as tf
-from globals import *
 import time as global_time
 from others.p_globals import (
     k, M, m, g, J_fric, M_fric, L, v_max, u_max, controlDisturbance, controlBias, TrackHalfLength
@@ -119,6 +118,7 @@ class predictor_autoregressive_tf:
                 self.gru_layers = [layer for layer in self.net.layers if (('gru' in layer.name) or ('lstm' in layer.name) or ('rnn' in layer.name))]
                 self.num_gru_layers = len(self.gru_layers)
                 self.rnn_internal_states = [tf.zeros(shape=(self.batch_size, layer.units)) for layer in self.gru_layers]
+            #self.Q_prev = None
             self.Q_prev = tf.convert_to_tensor(0, dtype=tf.float32)
 
     # TODO: replace everywhere with predict_tf
@@ -154,7 +154,7 @@ class predictor_autoregressive_tf:
             self.initial_state_tf = self.normalization_offset + tf.math.multiply(self.normalization_scale, self.initial_state_tf)
 
         # Run Last Input for RNN States
-        if self.net_type == 'GRU':
+        if self.net_type == 'GRU' and self.Q_prev is not None:
             # Set RNN States
             for j in range(self.num_gru_layers):
                 self.gru_layers[j].states[0].assign(self.rnn_internal_states[j])
@@ -168,10 +168,10 @@ class predictor_autoregressive_tf:
             for j in range(self.num_gru_layers):
                 self.rnn_internal_states[j] = tf.identity(self.gru_layers[j].states[0])
 
+        #self.initial_state_tf_prev = self.initial_state_tf
+
         # Run Iterations (Euler:ms, RNN:ms)
-        start = global_time.time()
         net_outputs = self.iterate_net(initial_state=self.initial_state_tf, Q=Q)
-        performance_measurement[1] = global_time.time() - start
 
         # Denormalization
         if self.net_name != 'EulerTF':
