@@ -42,6 +42,7 @@ from SI_Toolkit_ApplicationSpecificFiles.predictors_customization import STATE_V
 from types import SimpleNamespace
 import yaml
 import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"
 import tensorflow as tf
 import time as global_time
 from others.p_globals import (
@@ -49,7 +50,7 @@ from others.p_globals import (
 )
 
 class predictor_autoregressive_tf:
-    def __init__(self, horizon=None, batch_size=None, net_name=None, dt=0.02, intermediate_steps=10, use_runge_kutta=False, normalization=True):
+    def __init__(self, horizon=None, batch_size=None, net_name=None, dt=0.02, intermediate_steps=10, use_runge_kutta=False, normalization=True, k=None):
         self.net_name = net_name
         self.net_type = net_name
         self.batch_size = batch_size
@@ -58,6 +59,7 @@ class predictor_autoregressive_tf:
         self.intermediate_steps = intermediate_steps
         self.use_runge_kutta = use_runge_kutta
         self.normalization = normalization
+        self.k = k
 
         if net_name == 'EulerTF':
             # Network sizes
@@ -238,6 +240,8 @@ class predictor_autoregressive_tf:
         sa = tf.math.sin(angle)
         f = u_max * Q
 
+        k_loc = self.k if self.k is not None else k
+
         # Cart Friction
         # Equation 34  (https://sharpneat.sourceforge.io/research/cart-pole/cart-pole-equations.html)
         # Alternatives: Equation 31, 32, 33
@@ -252,13 +256,13 @@ class predictor_autoregressive_tf:
         positionDD = (
                 (
                         m * g * sa * ca  # Gravity
-                        - (1 + k) * (
+                        - (1 + k_loc) * (
                                 f  # Motor Force
                                 + (m * L * angleD**2 * sa)  # Movement from Pole
                                 + F_f  # Cart Friction
                         )
                         - (M_f * ca / L)  # Joint Friction
-                ) / (m * ca**2 - (1 + k) * (M + m))
+                ) / (m * ca**2 - (1 + k_loc) * (M + m))
         )
         #positionDD = tf.zeros_like(sa)
 
@@ -268,7 +272,7 @@ class predictor_autoregressive_tf:
                 g * sa                  # Gravity
                 - positionDD * ca       # Movement from Cart
                 - M_f / (m * L)         # Joint Friction
-            ) / ((1 + k) * L)
+            ) / ((1 + k_loc) * L)
         )
 
         return tf.stack([-angleD, -angleDD, positionD, positionDD], axis=1)
