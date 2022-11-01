@@ -50,6 +50,8 @@ ON_FLY_DATA_GENERATION = config['training_default']['ON_FLY_DATA_GENERATION']
 NORMALIZE = config['training_default']['NORMALIZE']
 USE_NNI = config['training_default']['USE_NNI']
 CONSTRUCT_NETWORK = config['training_default']['CONSTRUCT_NETWORK']
+TRAINING_MODE = config['training_default']['TRAINING_MODE']
+
 
 # For l2race
 # control_inputs = ['u1', 'u2']
@@ -117,6 +119,8 @@ def args():
     parser.add_argument('--construct_network', default=CONSTRUCT_NETWORK, type=str,
                         help='For Pytorch you can decide if you want to construct network with modules or cells.'
                              'First is needed for DeltaRNN, second gives more flexibility in specifying layers sizes.')
+    parser.add_argument('--training_mode', default=TRAINING_MODE, type=str,
+                        help='Decides training protocol.')
 
 
     args = parser.parse_args()

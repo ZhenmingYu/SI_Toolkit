@@ -1,3 +1,4 @@
+import copy
 import os.path
 import time
 import timeit
@@ -59,7 +60,11 @@ def train_network():
         pass
     # endregion
 
-    net, net_info = get_net(a)
+    a_load_network = copy.deepcopy(a)
+    if a.training_mode == 'autoreg-Marcin':
+        a_load_network.wash_out_len = 0
+        a_load_network.post_wash_out_len = 1
+    net, net_info = get_net(a_load_network)
 
     if net_info.library == 'TF':  # If loading pretrained network this has precedence against a.library
         from SI_Toolkit.Functions.TF.Training import train_network_core

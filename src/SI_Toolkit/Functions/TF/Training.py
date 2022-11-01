@@ -9,7 +9,7 @@ try:
 except:
     print('No DataSelector found.')
 
-
+from SI_Toolkit.Functions.TF.AutoregressiveTraining import fit_autoregressive_Marcin
 
 # Uncomment the @profile(precision=4) to get the report on memory usage after the training
 # Warning! It may affect performance. I would discourage you to use it for long training tasks
@@ -86,17 +86,20 @@ def train_network_core(net, net_info, training_dfs_norm, validation_dfs_norm, te
 
     # region Training loop
 
-    history = net.fit(
-        training_dataset,
-        epochs=a.num_epochs,
-        verbose=True,
-        shuffle=False,
-        validation_data=validation_dataset,
-        callbacks=callbacks_for_training,
-    )
+    if a.training_mode == 'autoreg-Marcin':
+        loss, validation_loss = fit_autoregressive_Marcin(net, net_info, training_dataset, validation_dataset, test_dataset, a)
+    else:
+        history = net.fit(
+            training_dataset,
+            epochs=a.num_epochs,
+            verbose=True,
+            shuffle=False,
+            validation_data=validation_dataset,
+            callbacks=callbacks_for_training,
+        )
 
-    loss = history.history['loss']
-    validation_loss = history.history['val_loss']
+        loss = history.history['loss']
+        validation_loss = history.history['val_loss']
 
     # endregion
 
