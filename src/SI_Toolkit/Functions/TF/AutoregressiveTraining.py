@@ -2,6 +2,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 
+import tqdm
+
 from SI_Toolkit.Predictors.autoregression import autoregression_loop
 from SI_Toolkit.computation_library import TensorFlowLibrary
 
@@ -33,7 +35,7 @@ def fit_autoregressive_Marcin(net, net_info, training_dataset, validation_datase
     for epoch in range(epochs):
 
         print("\nStart of epoch %d" % (epoch,))
-        for batch in tf.range(len(training_dataset)):   # Iterate over the batches of the dataset.
+        for batch in tqdm.tqdm(tf.range(len(training_dataset))):   # Iterate over the batches of the dataset.
 
             x_batch, y_batch = training_dataset[batch]
 
@@ -72,7 +74,7 @@ def fit_autoregressive_Marcin(net, net_info, training_dataset, validation_datase
             # Log every 200 batches.
             if batch % 200 == 0:
                 print(
-                    "Training loss (for one batch) at step %d: %.4f"
+                    "Training loss (for one batch) at step %d: %.6f"
                     % (batch, float(loss_value))
                 )
                 print("Seen so far: %s samples" % ((batch + 1) * a.batch_size))
