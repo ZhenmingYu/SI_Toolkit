@@ -521,7 +521,8 @@ def brunton_widget(features, ground_truth, predictions_array, time_axis, axs=Non
             axs.plot(time_axis[:-(i+1)]+(i+1)*dt_predictions, prediction_distance[i],
                         c=cmap((float(i) / max_horizon)*0.8+0.2),
                         marker='.', linestyle = '')
-
+            
+    axs.plot(time_axis, ground_truth[0][:, ground_truth_feature_idx], 'k:', label='Ground Truth', marker='.', markersize=2, linewidth=0.5)
     axs.set_ylim(y_lim)
     plt.show()
 
